@@ -49,7 +49,7 @@ except FileNotFoundError:
 feedback_frames = []
 frame_index = 0
 try:
-    # UPDATED: Loop for 3 frames only
+    # UPDATED: Loop for 10 frames only
     for i in range(10):
         filename = f"frame_0{i}_delay-0.2s.png"
         if os.path.exists(filename):
