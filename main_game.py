@@ -14,6 +14,8 @@ SCREEN_HEIGHT = 700
 FEEDBACK_DURATION = 3000
 REST_DURATION = 10000
 
+BIRD_Y = SCREEN_HEIGHT // 2
+
 # Colors
 SKY_BLUE = (135, 206, 235)
 WHITE = (255, 255, 255)
@@ -260,17 +262,23 @@ while running:
         if mt.incorrect_form_detected: feedback_end_time = current_time + FEEDBACK_DURATION
         show_red_alert = mt.incorrect_form_detected
 
-        # --- DRAW BIRD ---
-        wrist_height = get_normalized_wrist_height()
-        target_bird_y = int(wrist_height * (SCREEN_HEIGHT - 100)) + 50
-
-        # Smooth movement
-        current_bird_y = previous_bird_y + (target_bird_y - previous_bird_y) * 0.2
-        previous_bird_y = current_bird_y
+        # # --- DRAW BIRD ---
+        # wrist_height = get_normalized_wrist_height()
+        # target_bird_y = int(wrist_height * (SCREEN_HEIGHT - 100)) + 50
+        #
+        # # Smooth movement
+        # current_bird_y = previous_bird_y + (target_bird_y - previous_bird_y) * 0.2
+        # previous_bird_y = current_bird_y
 
         # *** DYNAMIC BIRD ***
         # We pass the real-time arm state from motion_tracking
-        draw_dynamic_bird(screen, SCREEN_WIDTH // 2, int(current_bird_y), mt.left_arm_up, mt.right_arm_up)
+        draw_dynamic_bird(
+            screen,
+            SCREEN_WIDTH // 2,
+            BIRD_Y,
+            mt.left_arm_up,
+            mt.right_arm_up
+        )
 
         # UI Stats
         pygame.draw.rect(screen, WHITE, (20, 20, 280, 110), border_radius=10)
