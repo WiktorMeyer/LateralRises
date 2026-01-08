@@ -268,10 +268,6 @@ while running:
         current_bird_y = previous_bird_y + (target_bird_y - previous_bird_y) * 0.2
         previous_bird_y = current_bird_y
 
-        # Draw Goal Line
-        pygame.draw.line(screen, GREEN, (0, 100), (SCREEN_WIDTH, 100), 5)
-        screen.blit(font_ui.render("GOAL HEIGHT", True, GREEN), (10, 70))
-
         # *** DYNAMIC BIRD ***
         # We pass the real-time arm state from motion_tracking
         draw_dynamic_bird(screen, SCREEN_WIDTH // 2, int(current_bird_y), mt.left_arm_up, mt.right_arm_up)
