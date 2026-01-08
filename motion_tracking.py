@@ -140,7 +140,7 @@ def draw_landmarks(frame, pose_landmarks):
             visibility = landmark.visibility if hasattr(landmark, 'visibility') else 1.0
 
             if visibility > 0.5:
-                cv2.circle(frame, (cx, cy), 5, (0, 255, 0), -1)
+                cv2.circle(frame, (cx, cy), 10, (0, 255, 0), -1)
             else:
                 cv2.circle(frame, (cx, cy), 3, (0, 150, 0), -1)
 
@@ -163,7 +163,7 @@ def draw_connections(frame, pose_landmarks):
             if start_vis > 0.5 and end_vis > 0.5:
                 start_point = (int(start_landmark.x * w), int(start_landmark.y * h))
                 end_point = (int(end_landmark.x * w), int(end_landmark.y * h))
-                cv2.line(frame, start_point, end_point, (255, 0, 0), 2)
+                cv2.line(frame, start_point, end_point, (255, 0, 0), 5)
 
 
 def draw_ui_elements(frame):
