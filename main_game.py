@@ -177,7 +177,7 @@ while running:
 
     # 2. DRAW UI ON TOP
     if game_state == 'MENU':
-        title = font_big.render("AR Strength Trainer", True, BLACK)
+        title = font_big.render("Gamified Workout Machine", True, BLACK)
         screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 60))
         draw_text_centered("Setup Your Workout", font_ui, DARK_GRAY, 250)
 
