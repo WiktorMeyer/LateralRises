@@ -33,10 +33,10 @@ pygame.display.set_caption("Group 6: Gamified Strength Trainer")
 font_ui = pygame.font.SysFont("Arial", 28, bold=True)
 font_big = pygame.font.SysFont("Arial", 60, bold=True)
 font_msg = pygame.font.SysFont("Arial", 40, bold=True)
-font_small = pygame.font.SysFont("Arial", 20)
+font_small = pygame.font.SysFont("Arial", 22)
 
 # --- GLOBAL VARIABLES FOR GAME STATE ---
-# Game States: 'MENU', 'PLAYING', 'REST', 'VICTORY'
+# Game States: 'MENU', 'GUIDE', 'PLAYING', 'REST', 'VICTORY'
 game_state = 'MENU'
 
 # User Settings (Defaults)
@@ -46,7 +46,7 @@ target_sets = 3
 # Progress Tracking
 current_set = 1
 reps_at_start_of_set = 0
-rest_end_time = 0  # For the countdown
+rest_end_time = 0
 
 # --- ASSET LOADING ---
 print("--- LOADING ASSETS ---")
@@ -114,6 +114,12 @@ def draw_button(rect, text, hover=False, color=BUTTON_COLOR):
     screen.blit(text_surf, text_rect)
 
 
+def draw_text_centered(text, font, color, y_offset):
+    surf = font.render(text, True, color)
+    rect = surf.get_rect(center=(SCREEN_WIDTH // 2, y_offset))
+    screen.blit(surf, rect)
+
+
 # --- MAIN LOOP ---
 clock = pygame.time.Clock()
 running = True
@@ -122,11 +128,18 @@ debug_trigger = False
 feedback_end_time = 0
 
 # UI Rectangles
+# Menu Buttons
 start_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 550, 200, 60)
+guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 50)  # New Guide Button
+
+# Settings Buttons
 reps_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 50, 50)
 reps_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 350, 50, 50)
 sets_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 450, 50, 50)
 sets_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 450, 50, 50)
+
+# Guide Screen Buttons
+back_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 600, 200, 60)
 
 # Victory Buttons
 play_again_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 500, 200, 60)
@@ -143,36 +156,36 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # MENU INTERACTIONS
+        # MENU STATE
         if game_state == 'MENU':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn_rect.collidepoint(event.pos):
-                    # START GAME
                     game_state = 'PLAYING'
                     reps_at_start_of_set = mt.lateral_raise_count
                     current_set = 1
 
-                # Adjust Reps
-                if reps_minus_rect.collidepoint(event.pos) and target_reps > 1:
-                    target_reps -= 1
-                if reps_plus_rect.collidepoint(event.pos):
-                    target_reps += 1
+                if guide_btn_rect.collidepoint(event.pos):
+                    game_state = 'GUIDE'
 
-                # Adjust Sets
-                if sets_minus_rect.collidepoint(event.pos) and target_sets > 1:
-                    target_sets -= 1
-                if sets_plus_rect.collidepoint(event.pos):
-                    target_sets += 1
+                # Settings
+                if reps_minus_rect.collidepoint(event.pos) and target_reps > 1: target_reps -= 1
+                if reps_plus_rect.collidepoint(event.pos): target_reps += 1
+                if sets_minus_rect.collidepoint(event.pos) and target_sets > 1: target_sets -= 1
+                if sets_plus_rect.collidepoint(event.pos): target_sets += 1
 
-        # VICTORY INTERACTIONS
+        # GUIDE STATE
+        elif game_state == 'GUIDE':
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if back_btn_rect.collidepoint(event.pos):
+                    game_state = 'MENU'
+
+        # VICTORY STATE
         elif game_state == 'VICTORY':
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if play_again_rect.collidepoint(event.pos):
-                    game_state = 'MENU'
-                if quit_rect.collidepoint(event.pos):
-                    running = False
+                if play_again_rect.collidepoint(event.pos): game_state = 'MENU'
+                if quit_rect.collidepoint(event.pos): running = False
 
-        # PLAYING DEBUG
+        # PLAYING STATE (Debug)
         if game_state == 'PLAYING':
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 feedback_end_time = current_time + FEEDBACK_DURATION
@@ -180,66 +193,84 @@ while running:
             if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
                 debug_trigger = False
 
-    # --- LOGIC & DRAWING ---
+    # --- DRAWING ---
     screen.fill(SKY_BLUE)
 
     if game_state == 'MENU':
         # Title
         title = font_big.render("Gamified Strength Trainer", True, BLACK)
-        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 80))
+        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 60))
 
-        # Settings
-        instr = font_ui.render("Configure Your Workout:", True, DARK_GRAY)
-        screen.blit(instr, (SCREEN_WIDTH // 2 - instr.get_width() // 2, 250))
+        # Subtitle
+        draw_text_centered("Setup Your Workout", font_ui, DARK_GRAY, 250)
 
-        # Reps
-        reps_label = font_ui.render(f"Reps per Set: {target_reps}", True, BLACK)
-        screen.blit(reps_label, (SCREEN_WIDTH // 2 - reps_label.get_width() // 2, 310))
+        # Reps UI
+        draw_text_centered(f"Reps per Set: {target_reps}", font_ui, BLACK, 310)
         draw_button(reps_minus_rect, "-", reps_minus_rect.collidepoint(mouse_pos))
         draw_button(reps_plus_rect, "+", reps_plus_rect.collidepoint(mouse_pos))
 
-        # Sets
-        sets_label = font_ui.render(f"Total Sets: {target_sets}", True, BLACK)
-        screen.blit(sets_label, (SCREEN_WIDTH // 2 - sets_label.get_width() // 2, 410))
+        # Sets UI
+        draw_text_centered(f"Total Sets: {target_sets}", font_ui, BLACK, 410)
         draw_button(sets_minus_rect, "-", sets_minus_rect.collidepoint(mouse_pos))
         draw_button(sets_plus_rect, "+", sets_plus_rect.collidepoint(mouse_pos))
 
-        # Start
+        # Buttons
         draw_button(start_btn_rect, "START GAME", start_btn_rect.collidepoint(mouse_pos))
+        draw_button(guide_btn_rect, "HOW TO PLAY", guide_btn_rect.collidepoint(mouse_pos), color=GRAY)
+
+    elif game_state == 'GUIDE':
+        # White overlay for readability
+        overlay = pygame.Surface((800, 500))
+        overlay.fill(WHITE)
+        overlay.set_alpha(230)
+        screen.blit(overlay, (100, 100))
+        pygame.draw.rect(screen, BLACK, (100, 100, 800, 500), 3)
+
+        draw_text_centered("HOW TO PLAY", font_big, BLACK, 150)
+
+        # Instructions List
+        instructions = [
+            "1. Stand back so your upper body is visible to the camera.",
+            "2. Hold weights (dumbbells) in your hands.",
+            "3. Raise your arms to the side (Lateral Raises).",
+            "4. The Bird follows your arms! Arms UP = Bird's Wings UP.",
+            "5. Keep arms straight and lift evenly! Don't let one arm drop lower than the other.",
+            "6. Complete the target reps to finish a set."
+        ]
+
+        y_start = 230
+        for line in instructions:
+            draw_text_centered(line, font_small, BLACK, y_start)
+            y_start += 50
+
+        draw_button(back_btn_rect, "BACK", back_btn_rect.collidepoint(mouse_pos))
 
     elif game_state == 'PLAYING':
-        # Logic: Current reps in this set
+        # Logic
         current_reps_done = mt.lateral_raise_count - reps_at_start_of_set
 
-        # Set Completion
         if current_reps_done >= target_reps:
             if current_set < target_sets:
                 game_state = 'REST'
-                rest_end_time = current_time + REST_DURATION  # Start 10s Timer
+                rest_end_time = current_time + REST_DURATION
             else:
                 game_state = 'VICTORY'
 
-        # --- GAME VISUALS ---
+        # Visuals
         wrist_height = get_normalized_wrist_height()
         target_bird_y = int(wrist_height * (SCREEN_HEIGHT - 100)) + 50
         current_bird_y = previous_bird_y + (target_bird_y - previous_bird_y) * 0.2
-
-        if current_bird_y < previous_bird_y - 1:
-            is_flying_up = True
-        else:
-            is_flying_up = False
+        is_flying_up = current_bird_y < previous_bird_y - 1
         previous_bird_y = current_bird_y
 
         # Feedback Logic
-        if mt.incorrect_form_detected:
-            feedback_end_time = current_time + FEEDBACK_DURATION
+        if mt.incorrect_form_detected: feedback_end_time = current_time + FEEDBACK_DURATION
         show_gif = current_time < feedback_end_time
         show_red_alert = mt.incorrect_form_detected or debug_trigger
 
         # Draw Elements
         pygame.draw.line(screen, GREEN, (0, 100), (SCREEN_WIDTH, 100), 5)
-        goal_label = font_ui.render("GOAL HEIGHT", True, GREEN)
-        screen.blit(goal_label, (10, 70))
+        screen.blit(font_ui.render("GOAL HEIGHT", True, GREEN), (10, 70))
 
         if bird_up_img and bird_down_img:
             if is_flying_up:
@@ -249,24 +280,17 @@ while running:
         else:
             pygame.draw.circle(screen, (255, 215, 0), (SCREEN_WIDTH // 2, int(current_bird_y)), 30)
 
-        # UI Stats
-        score_box_w, score_box_h = 280, 110
-        pygame.draw.rect(screen, WHITE, (20, 20, score_box_w, score_box_h), border_radius=10)
-        pygame.draw.rect(screen, BLACK, (20, 20, score_box_w, score_box_h), 2, border_radius=10)
+        # UI Stats Box
+        pygame.draw.rect(screen, WHITE, (20, 20, 280, 110), border_radius=10)
+        pygame.draw.rect(screen, BLACK, (20, 20, 280, 110), 2, border_radius=10)
+        screen.blit(font_ui.render(f"Set: {current_set} / {target_sets}", True, BLACK), (35, 30))
+        screen.blit(font_ui.render(f"Reps: {current_reps_done} / {target_reps}", True, BLACK), (35, 65))
+        screen.blit(font_small.render(f"Total Score: {mt.lateral_raise_count * 100}", True, DARK_GRAY), (35, 100))
 
-        set_text = font_ui.render(f"Set: {current_set} / {target_sets}", True, BLACK)
-        reps_text = font_ui.render(f"Reps: {current_reps_done} / {target_reps}", True, BLACK)
-        total_score_text = font_small.render(f"Total Score: {mt.lateral_raise_count * 100}", True, DARK_GRAY)
-
-        screen.blit(set_text, (35, 30))
-        screen.blit(reps_text, (35, 65))
-        screen.blit(total_score_text, (35, 100))
-
-        # Feedback
+        # Feedback Overlays
         if show_red_alert:
             pygame.draw.rect(screen, RED, (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), 10)
-            warn_surf = font_msg.render("WRONG FORM!", True, RED)
-            screen.blit(warn_surf, (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2))
+            screen.blit(font_msg.render("WRONG FORM!", True, RED), (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2))
 
         if show_gif:
             anim_x, anim_y = 20, SCREEN_HEIGHT - 220
@@ -276,46 +300,30 @@ while running:
                 screen.blit(feedback_frames[int(frame_index)], (anim_x, anim_y))
             else:
                 pygame.draw.rect(screen, RED, (anim_x, anim_y, 300, 200), 2)
-                err_text = font_ui.render("No Images", True, RED)
-                screen.blit(err_text, (anim_x + 50, anim_y + 90))
+                screen.blit(font_ui.render("No Images", True, RED), (anim_x + 50, anim_y + 90))
 
     elif game_state == 'REST':
-        # Countdown Logic
-        remaining_time = rest_end_time - current_time
-        if remaining_time <= 0:
-            # Time's up -> Go to Next Set
+        remaining = rest_end_time - current_time
+        if remaining <= 0:
             game_state = 'PLAYING'
             current_set += 1
             reps_at_start_of_set = mt.lateral_raise_count
 
-        # Display Rest Screen
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-        overlay.set_alpha(150)
+        overlay.set_alpha(180)
         overlay.fill(WHITE)
         screen.blit(overlay, (0, 0))
 
-        msg1 = font_big.render("SET COMPLETE!", True, GREEN)
-        msg2 = font_ui.render(f"Next set starts in:", True, BLACK)
-
-        # Big Countdown Timer
-        seconds_left = int(remaining_time / 1000) + 1
-        timer_surf = font_big.render(str(seconds_left), True, RED)
-
-        screen.blit(msg1, (SCREEN_WIDTH // 2 - msg1.get_width() // 2, 200))
-        screen.blit(msg2, (SCREEN_WIDTH // 2 - msg2.get_width() // 2, 300))
-        screen.blit(timer_surf, (SCREEN_WIDTH // 2 - timer_surf.get_width() // 2, 350))
+        draw_text_centered("SET COMPLETE!", font_big, GREEN, 200)
+        draw_text_centered("Get ready for the next set in:", font_ui, BLACK, 300)
+        draw_text_centered(str(int(remaining / 1000) + 1), font_big, RED, 360)
 
     elif game_state == 'VICTORY':
         screen.fill(GREEN)
-        msg1 = font_big.render("WORKOUT COMPLETE!", True, WHITE)
-        msg2 = font_ui.render(f"Great job! You finished {target_sets} sets.", True, WHITE)
-        msg3 = font_msg.render(f"Final Score: {mt.lateral_raise_count * 100}", True, WHITE)
+        draw_text_centered("WORKOUT COMPLETE!", font_big, WHITE, 200)
+        draw_text_centered(f"You finished {target_sets} sets of {target_reps} reps.", font_ui, WHITE, 300)
+        draw_text_centered(f"Final Score: {mt.lateral_raise_count * 100}", font_msg, WHITE, 400)
 
-        screen.blit(msg1, (SCREEN_WIDTH // 2 - msg1.get_width() // 2, 200))
-        screen.blit(msg2, (SCREEN_WIDTH // 2 - msg2.get_width() // 2, 300))
-        screen.blit(msg3, (SCREEN_WIDTH // 2 - msg3.get_width() // 2, 400))
-
-        # End Buttons
         draw_button(play_again_rect, "PLAY AGAIN", play_again_rect.collidepoint(mouse_pos))
         draw_button(quit_rect, "QUIT", quit_rect.collidepoint(mouse_pos), color=RED)
 
