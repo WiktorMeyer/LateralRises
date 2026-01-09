@@ -202,12 +202,13 @@ while running:
 
         draw_text_centered("HOW TO PLAY", font_big, BLACK, 150)
         instructions = [
-            "1. Stand back so your full body is visible.",
-            "2. You will see a Stickman Overlay on your body.",
-            "3. Raise your arms (Lateral Raises).",
-            "4. The Stickman tracks your form.",
-            "5. If lines turn RED or you see a warning, fix your arms!",
-            "6. Complete the target reps to finish a set."
+            "1. Stand back so your upper body is visible to the camera.",
+            "2. Hold weights (preferably dumbbells) in your hands.",
+            "3. Raise your arms to the side (Lateral Raises).",
+            "4. Watch the Stickman overlay track your form in real-time.",
+            "5. Keep arms straight and synchronized! Don't let one lag behind.",
+            "6. If lines turn RED or you see a warning, correct your form!",
+            "7. Complete the target reps to finish a set."
         ]
         y_start = 230
         for line in instructions:
