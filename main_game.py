@@ -98,7 +98,7 @@ def draw_text_centered(text, font, color, y_offset):
 
 
 # --- NEW: DYNAMIC BIRD DRAWING ---
-def draw_dynamic_bird(surface, x, y, left_up, right_up):
+def draw_dynamic_bird(surface, x, y, left_up, right_up, left_wrist_height, right_wrist_height):
     """
     Draws a bird where wings respond individually to arm states.
     x, y: Center position of the bird body.
@@ -122,23 +122,23 @@ def draw_dynamic_bird(surface, x, y, left_up, right_up):
     # Note: User's Left is Screen Right (Mirror), but usually users intuit 'My Left Arm' = 'Left Wing on Screen'
     # Let's map strict Left-to-Left for clarity.
 
-    # Left Wing
-    if left_up:
-        # Wing UP (Triangle pointing up-left)
-        points = [(x - 35, y), (x - 90, y - 40), (x - 50, y + 10)]
-    else:
-        # Wing DOWN (Triangle pointing down-left)
-        points = [(x - 35, y), (x - 90, y + 30), (x - 50, y + 10)]
+    left_wrist_height = max(0.2, min(1.2, left_wrist_height))
+    left_wrist_height = (left_wrist_height - 0.7) * 2
+    left_wrist_x = left_wrist_height * 20
+    left_wrist_y = left_wrist_height * 80
+
+    right_wrist_height = max(0.2, min(1.2, right_wrist_height))
+    right_wrist_height = (right_wrist_height - 0.7) * 2
+    right_wrist_x = right_wrist_height * 20
+    right_wrist_y = right_wrist_height * 80
+
+    #left wing
+    points = [(x - 100 - left_wrist_x, y + left_wrist_y), (x - 38, y + 18), (x - 38, y - 18)]
     pygame.draw.polygon(surface, ORANGE, points)
     pygame.draw.polygon(surface, BLACK, points, 3)  # Outline
 
-    # Right Wing
-    if right_up:
-        # Wing UP
-        points = [(x + 35, y), (x + 90, y - 40), (x + 50, y + 10)]
-    else:
-        # Wing DOWN
-        points = [(x + 35, y), (x + 90, y + 30), (x + 50, y + 10)]
+    #right wing
+    points = [(x + 100 + right_wrist_x, y + right_wrist_y), (x + 38, y + 18), (x + 38, y - 18)]
     pygame.draw.polygon(surface, ORANGE, points)
     pygame.draw.polygon(surface, BLACK, points, 3)  # Outline
 
@@ -293,7 +293,9 @@ while running:
             SCREEN_WIDTH // 2,
             BIRD_Y,
             mt.left_arm_up,
-            mt.right_arm_up
+            mt.right_arm_up,
+            mt.left_wrist_height,
+            mt.right_wrist_height
         )
 
         # UI Stats

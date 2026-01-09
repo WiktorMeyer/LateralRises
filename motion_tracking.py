@@ -19,6 +19,8 @@ arms_raised = False
 incorrect_form_detected = False
 one_arm_raised_time = None
 FORM_CHECK_DELAY = 0.5
+left_wrist_height = 0.5
+right_wrist_height = 0.5
 
 # Variables to share specific limb states for the Bird
 left_arm_up = False
@@ -32,7 +34,7 @@ def result_callback(result: PoseLandmarkerResult, output_image: mp.Image, timest
 
 def check_lateral_raise_form(pose_landmarks):
     global arms_raised, lateral_raise_count, incorrect_form_detected, one_arm_raised_time
-    global left_arm_up, right_arm_up
+    global left_arm_up, right_arm_up, left_wrist_height, right_wrist_height
 
     if len(pose_landmarks) < 17:
         return
@@ -49,6 +51,8 @@ def check_lateral_raise_form(pose_landmarks):
     # Export these for the UI to use
     left_arm_up = left_raised
     right_arm_up = right_raised
+    left_wrist_height = left_wrist.y
+    right_wrist_height = right_wrist.y
 
     both_raised = left_raised and right_raised
 
