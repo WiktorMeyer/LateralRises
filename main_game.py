@@ -142,6 +142,28 @@ def draw_dynamic_bird(surface, x, y, left_up, right_up, left_wrist_height, right
     pygame.draw.polygon(surface, ORANGE, points)
     pygame.draw.polygon(surface, BLACK, points, 3)  # Outline
 
+def ghost_wings(surface, x, y, left_wrist_height):
+    transparent_layer = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    FILL = (200, 200, 200, 100)
+    OUTLINE = (50, 50, 50, 150)
+
+    left_wrist_height = max(0.2, min(1.2, left_wrist_height))
+    left_wrist_height = (left_wrist_height - 0.7) * 2
+    left_wrist_x = left_wrist_height * 20
+    left_wrist_y = left_wrist_height * 80
+    print("ghost")
+
+    # left wing
+    points = [(x - 100 - left_wrist_x, y + left_wrist_y), (x - 38, y + 18), (x - 38, y - 18)]
+    pygame.draw.polygon(transparent_layer, FILL, points)
+    pygame.draw.polygon(transparent_layer, OUTLINE, points, 3)
+
+    # right wing
+    points = [(x + 100 + left_wrist_x, y + left_wrist_x), (x + 38, y + 18), (x + 38, y - 18)]
+    pygame.draw.polygon(transparent_layer, FILL, points)
+    pygame.draw.polygon(transparent_layer, OUTLINE, points, 3)  # Outline
+
+    surface.blit(transparent_layer, (0, 0))
 
 # --- MAIN LOOP ---
 clock = pygame.time.Clock()
@@ -316,6 +338,12 @@ while running:
             # Text explanation
             screen.blit(font_ui.render("Raise BOTH arms evenly!", True, RED),
                         (SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 + 30))
+            ghost_wings(
+                screen,
+                SCREEN_WIDTH // 2,
+                BIRD_Y,
+                mt.left_wrist_height,
+            )
 
     elif game_state == 'REST':
         remaining = rest_end_time - current_time
