@@ -333,11 +333,11 @@ while running:
             warn_bg = pygame.Surface((400, 80))
             warn_bg.fill(WHITE)
             warn_bg.set_alpha(200)
-            screen.blit(warn_bg, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 2 - 40))
-            screen.blit(font_msg.render("WRONG FORM!", True, RED), (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 2 - 20))
+            screen.blit(warn_bg, (SCREEN_WIDTH // 2 - 200, SCREEN_HEIGHT // 5 - 40))
+            screen.blit(font_msg.render("WRONG FORM!", True, RED), (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 5 - 20))
             # Text explanation
             screen.blit(font_ui.render("Raise BOTH arms evenly!", True, RED),
-                        (SCREEN_WIDTH // 2 - 130, SCREEN_HEIGHT // 2 + 30))
+                        (SCREEN_WIDTH // 2 - 140, SCREEN_HEIGHT // 5 + 50 ))
             ghost_wings(
                 screen,
                 SCREEN_WIDTH // 2,
