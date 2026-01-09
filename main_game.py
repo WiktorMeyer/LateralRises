@@ -12,7 +12,7 @@ import motion_tracking as mt
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
 FEEDBACK_DURATION = 3000
-REST_DURATION = 10000
+REST_DURATION = 5000
 
 BIRD_Y = SCREEN_HEIGHT // 2
 
@@ -49,7 +49,7 @@ reps_at_start_of_set = 0
 rest_end_time = 0
 
 # --- VIDEO GUIDE SETUP ---
-video_path = "tutorial.mp4"  # Ensure this file exists!
+video_path = "video tutorial.mp4"  # Ensure this file exists!
 cap_guide = None
 
 
