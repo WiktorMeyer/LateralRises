@@ -31,6 +31,7 @@ BUTTON_HOVER = (100, 160, 210)
 
 # --- INITIALIZATION ---
 pygame.init()
+pygame.mixer.init()  # Initialize the mixer for audio
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Group 6: Bird Game V2 (Video Guide)")
 
@@ -50,7 +51,9 @@ rest_end_time = 0
 
 # --- VIDEO GUIDE SETUP ---
 video_path = "video tutorial.mp4"  # Ensure this file exists!
+audio_path = "tutorial_audio.wav"  # Audio file for the tutorial
 cap_guide = None
+tutorial_audio = None
 
 
 # --- TRACKING THREAD ---
@@ -158,7 +161,7 @@ sets_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 450, 50, 50)
 play_again_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 500, 200, 60)
 quit_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 500, 200, 60)
 
-print("--- VERSION 2 (VIDEO + DYNAMIC BIRD) STARTED ---")
+print("--- VERSION 2 (VIDEO + DYNAMIC BIRD + AUDIO) STARTED ---")
 
 while running:
     current_time = pygame.time.get_ticks()
@@ -183,6 +186,17 @@ while running:
                     else:
                         cap_guide = None
 
+                    # Load and play audio
+                    if os.path.exists(audio_path):
+                        try:
+                            tutorial_audio = pygame.mixer.Sound(audio_path)
+                            tutorial_audio.play()
+                        except Exception as e:
+                            print(f"Audio Error: {e}")
+                            tutorial_audio = None
+                    else:
+                        print("Audio file not found: tutorial_audio.wav")
+
                 if reps_minus_rect.collidepoint(event.pos) and target_reps > 1: target_reps -= 1
                 if reps_plus_rect.collidepoint(event.pos): target_reps += 1
                 if sets_minus_rect.collidepoint(event.pos) and target_sets > 1: target_sets -= 1
@@ -192,7 +206,13 @@ while running:
         elif game_state == 'GUIDE':
             if event.type == pygame.MOUSEBUTTONDOWN and back_btn_rect.collidepoint(event.pos):
                 game_state = 'MENU'
-                if cap_guide: cap_guide.release()
+                if cap_guide:
+                    cap_guide.release()
+                    cap_guide = None
+                # Stop audio when leaving guide
+                if tutorial_audio:
+                    tutorial_audio.stop()
+                    tutorial_audio = None
 
         # VICTORY
         elif game_state == 'VICTORY':
@@ -235,12 +255,16 @@ while running:
             ret, frame = cap_guide.read()
             if ret:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = np.rot90(frame)
+                frame = np.transpose(frame, (1, 0, 2))  # swap width & height
                 frame = pygame.surfarray.make_surface(frame)
                 frame = pygame.transform.scale(frame, (SCREEN_WIDTH, SCREEN_HEIGHT))
                 screen.blit(frame, (0, 0))
             else:
-                cap_guide.set(cv2.CAP_PROP_POS_FRAMES, 0)  # Loop
+                # Loop video
+                cap_guide.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                # Loop audio if it finished
+                if tutorial_audio and not pygame.mixer.get_busy():
+                    tutorial_audio.play()
         else:
             screen.fill(BLACK)
             draw_text_centered("Video not found: tutorial.mp4", font_msg, RED, 300)
@@ -261,14 +285,6 @@ while running:
         # Feedback
         if mt.incorrect_form_detected: feedback_end_time = current_time + FEEDBACK_DURATION
         show_red_alert = mt.incorrect_form_detected
-
-        # # --- DRAW BIRD ---
-        # wrist_height = get_normalized_wrist_height()
-        # target_bird_y = int(wrist_height * (SCREEN_HEIGHT - 100)) + 50
-        #
-        # # Smooth movement
-        # current_bird_y = previous_bird_y + (target_bird_y - previous_bird_y) * 0.2
-        # previous_bird_y = current_bird_y
 
         # *** DYNAMIC BIRD ***
         # We pass the real-time arm state from motion_tracking
@@ -324,5 +340,10 @@ while running:
     pygame.display.flip()
     clock.tick(30)
 
+# Cleanup
+if cap_guide:
+    cap_guide.release()
+if tutorial_audio:
+    tutorial_audio.stop()
 pygame.quit()
 sys.exit()
