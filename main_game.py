@@ -174,7 +174,8 @@ feedback_end_time = 0
 
 # UI Rectangles
 start_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 550, 200, 60)
-guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 50)
+guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 620, 200, 50)
+text_guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 620, 200, 50)
 back_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 60)
 reps_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 50, 50)
 reps_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 350, 50, 50)
@@ -271,6 +272,7 @@ while running:
 
         draw_button(start_btn_rect, "START GAME", start_btn_rect.collidepoint(mouse_pos))
         draw_button(guide_btn_rect, "WATCH TUTORIAL", guide_btn_rect.collidepoint(mouse_pos), color=GRAY)
+        draw_button(text_guide_btn_rect, "HOW TO PLAY", text_guide_btn_rect.collidepoint(mouse_pos), color=GRAY)
 
     elif game_state == 'GUIDE':
         if cap_guide and cap_guide.isOpened():
