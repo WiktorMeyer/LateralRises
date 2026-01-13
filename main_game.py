@@ -28,6 +28,7 @@ BUTTON_HOVER = (100, 160, 210)
 
 # --- INITIALIZATION ---
 pygame.init()
+pygame.mixer.init()  # Initialize the mixer for audio
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Group 6: AR Strength Trainer")
 
@@ -44,6 +45,12 @@ target_sets = 3
 current_set = 1
 reps_at_start_of_set = 0
 rest_end_time = 0
+
+# --- VIDEO GUIDE SETUP ---
+video_path = "tutorial_video2.mp4"  # Ensure this file exists!
+audio_path = "tutorial_video2.wav"  # Audio file for the tutorial
+cap_guide = None
+tutorial_audio = None
 
 # --- ASSET LOADING (Feedback Images) ---
 feedback_frames = []
@@ -93,17 +100,18 @@ debug_trigger = False
 feedback_end_time = 0
 
 # UI Rectangles
-start_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 550, 200, 60)
-guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 50)
+start_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 500, 200, 60)
+video_guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 570, 200, 50)
+guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 570, 200, 50)
 reps_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 50, 50)
 reps_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 350, 50, 50)
-sets_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 450, 50, 50)
-sets_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 450, 50, 50)
-back_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 600, 200, 60)
+sets_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 430, 50, 50)
+sets_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 430, 50, 50)
+back_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 60)
 play_again_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 500, 200, 60)
 quit_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 500, 200, 60)
 
-print("--- APP STARTED ---")
+print("--- APP STARTED (WITH VIDEO TUTORIAL) ---")
 
 while running:
     current_time = pygame.time.get_ticks()
@@ -121,7 +129,28 @@ while running:
                     game_state = 'PLAYING'
                     reps_at_start_of_set = mt.lateral_raise_count
                     current_set = 1
-                if guide_btn_rect.collidepoint(event.pos): game_state = 'GUIDE'
+
+                if video_guide_btn_rect.collidepoint(event.pos):
+                    game_state = 'VIDEO_GUIDE'
+                    if os.path.exists(video_path):
+                        cap_guide = cv2.VideoCapture(video_path)
+                    else:
+                        cap_guide = None
+
+                    # Load and play audio
+                    if os.path.exists(audio_path):
+                        try:
+                            tutorial_audio = pygame.mixer.Sound(audio_path)
+                            tutorial_audio.play()
+                        except Exception as e:
+                            print(f"Audio Error: {e}")
+                            tutorial_audio = None
+                    else:
+                        print("Audio file not found: tutorial_audio.wav")
+
+                if guide_btn_rect.collidepoint(event.pos):
+                    game_state = 'GUIDE'
+
                 # Settings
                 if reps_minus_rect.collidepoint(event.pos) and target_reps > 1: target_reps -= 1
                 if reps_plus_rect.collidepoint(event.pos): target_reps += 1
@@ -132,6 +161,18 @@ while running:
         elif game_state == 'GUIDE':
             if event.type == pygame.MOUSEBUTTONDOWN and back_btn_rect.collidepoint(event.pos):
                 game_state = 'MENU'
+
+        elif game_state == 'VIDEO_GUIDE':
+            if event.type == pygame.MOUSEBUTTONDOWN and back_btn_rect.collidepoint(event.pos):
+                game_state = 'MENU'
+                if cap_guide:
+                    cap_guide.release()
+                    cap_guide = None
+                # Stop audio when leaving guide
+                if tutorial_audio:
+                    tutorial_audio.stop()
+                    tutorial_audio = None
+
         elif game_state == 'VICTORY':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if play_again_rect.collidepoint(event.pos): game_state = 'MENU'
@@ -186,12 +227,34 @@ while running:
         draw_button(reps_minus_rect, "-", reps_minus_rect.collidepoint(mouse_pos))
         draw_button(reps_plus_rect, "+", reps_plus_rect.collidepoint(mouse_pos))
 
-        draw_text_centered(f"Total Sets: {target_sets}", font_ui, BLACK, 410)
+        draw_text_centered(f"Total Sets: {target_sets}", font_ui, BLACK, 390)
         draw_button(sets_minus_rect, "-", sets_minus_rect.collidepoint(mouse_pos))
         draw_button(sets_plus_rect, "+", sets_plus_rect.collidepoint(mouse_pos))
 
         draw_button(start_btn_rect, "START WORKOUT", start_btn_rect.collidepoint(mouse_pos))
         draw_button(guide_btn_rect, "HOW TO PLAY", guide_btn_rect.collidepoint(mouse_pos), color=GRAY)
+        draw_button(video_guide_btn_rect, "WATCH TUTORIAL", video_guide_btn_rect.collidepoint(mouse_pos), color=GRAY)
+
+    elif game_state == 'VIDEO_GUIDE':
+        if cap_guide and cap_guide.isOpened():
+            ret, frame = cap_guide.read()
+            if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = np.transpose(frame, (1, 0, 2))  # swap width & height
+                frame = pygame.surfarray.make_surface(frame)
+                frame = pygame.transform.scale(frame, (SCREEN_WIDTH, SCREEN_HEIGHT))
+                screen.blit(frame, (0, 0))
+            else:
+                # Loop video
+                cap_guide.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                # Loop audio if it finished
+                if tutorial_audio and not pygame.mixer.get_busy():
+                    tutorial_audio.play()
+        else:
+            screen.fill(BLACK)
+            draw_text_centered("Video not found: video tutorial.mp4", font_msg, RED, 300)
+
+        draw_button(back_btn_rect, "EXIT TUTORIAL", back_btn_rect.collidepoint(mouse_pos), color=RED)
 
     elif game_state == 'GUIDE':
         overlay = pygame.Surface((850, 500))
@@ -287,5 +350,10 @@ while running:
     pygame.display.flip()
     clock.tick(30)
 
+# Cleanup
+if cap_guide:
+    cap_guide.release()
+if tutorial_audio:
+    tutorial_audio.stop()
 pygame.quit()
 sys.exit()
