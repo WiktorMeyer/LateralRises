@@ -220,6 +220,9 @@ while running:
                     else:
                         print("Audio file not found: tutorial_audio.wav")
 
+                if text_guide_btn_rect.collidepoint(event.pos):
+                    game_state = 'TEXT_GUIDE'
+
                 if reps_minus_rect.collidepoint(event.pos) and target_reps > 1: target_reps -= 1
                 if reps_plus_rect.collidepoint(event.pos): target_reps += 1
                 if sets_minus_rect.collidepoint(event.pos) and target_sets > 1: target_sets -= 1
@@ -236,6 +239,10 @@ while running:
                 if tutorial_audio:
                     tutorial_audio.stop()
                     tutorial_audio = None
+
+        elif game_state == 'TEXT_GUIDE':
+            if event.type == pygame.MOUSEBUTTONDOWN and back_btn_rect.collidepoint(event.pos):
+                game_state = 'MENU'
 
         # VICTORY
         elif game_state == 'VICTORY':
@@ -293,6 +300,29 @@ while running:
             screen.fill(BLACK)
             draw_text_centered("Video not found: tutorial.mp4", font_msg, RED, 300)
 
+        draw_button(back_btn_rect, "BACK", back_btn_rect.collidepoint(mouse_pos))
+
+    elif game_state == 'TEXT_GUIDE':
+        overlay = pygame.Surface((850, 500))
+        overlay.fill(WHITE)
+        overlay.set_alpha(230)
+        screen.blit(overlay, (75, 100))
+        pygame.draw.rect(screen, BLACK, (75, 100, 850, 500), 3)
+
+        draw_text_centered("HOW TO PLAY", font_big, BLACK, 150)
+        instructions = [
+            "1. Stand back so your upper body is visible to the camera.",
+            "2. Hold weights (preferably dumbbells) in your hands.",
+            "3. Raise your arms to the side (Lateral Raises).",
+            "4. Watch the Bird overlay track your form in real-time.",
+            "5. Keep arms straight and synchronized! Don't let one lag behind.",
+            "6. If lines turn RED or you see a warning, correct your form!",
+            "7. Complete the target reps to finish a set."
+        ]
+        y_start = 230
+        for line in instructions:
+            draw_text_centered(line, font_small, BLACK, y_start)
+            y_start += 50
         draw_button(back_btn_rect, "BACK", back_btn_rect.collidepoint(mouse_pos))
 
     elif game_state == 'PLAYING':
