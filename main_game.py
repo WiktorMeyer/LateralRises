@@ -7,7 +7,14 @@ import numpy as np
 
 # import other files
 import motion_tracking as mt
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, CAM_W, CAM_H, FEEDBACK_DURATION, REST_DURATION
+import config
+
+# get variables from config.py
+SCREEN_WIDTH = config.SCREEN_WIDTH
+SCREEN_HEIGHT = config.SCREEN_HEIGHT
+FEEDBACK_DURATION = config.FEEDBACK_DURATION
+REST_DURATION = config.REST_DURATION
+CAM_W, CAM_H = config.CAM_W, config.CAM_H
 
 BIRD_Y = SCREEN_HEIGHT // 2
 
