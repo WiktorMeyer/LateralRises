@@ -9,7 +9,7 @@ import numpy as np
 import motion_tracking as mt
 import config
 from config import *
-from ui.base import Button
+from ui.base import Button, ProgressBar
 
 # get variables from config.py
 SCREEN_WIDTH = config.SCREEN_WIDTH
@@ -395,47 +395,23 @@ while running:
 
         screen.blit(font_small.render(f"Total Reps: {mt.lateral_raise_count}", True, DARK_GRAY), (35, 100))
 
-        # Progress Bar
+        # Progress Bar parameters
 
         bar_width = 400
-
         bar_height = 30
-
         bar_x = SCREEN_WIDTH // 2 - bar_width // 2
-
         bar_y = SCREEN_HEIGHT - 80
 
         # Background
-
-        pygame.draw.rect(screen, GRAY, (bar_x, bar_y, bar_width, bar_height), border_radius=15)
-
-        # Fill based on progress
+        progress_bar = ProgressBar((bar_x, bar_y, bar_width, bar_height), GRAY, 15)
 
         progress = min(current_reps_done / target_reps, 1.0)
 
-        fill_width = int(bar_width * progress)
-
-        if fill_width > 0:
-
-            # Gradient effect: change color as you progress
-
-            if progress < 0.5:
-
-                bar_color = ORANGE
-
-            elif progress < 0.8:
-
-                bar_color = YELLOW
-
-            else:
-
-                bar_color = GREEN
-
-            pygame.draw.rect(screen, bar_color, (bar_x, bar_y, fill_width, bar_height), border_radius=15)
+        if current_reps_done > 0:
+            progress_bar.draw(screen, progress)
 
         # Border
-
-        pygame.draw.rect(screen, BLACK, (bar_x, bar_y, bar_width, bar_height), 3, border_radius=15)
+        pygame.draw.rect(screen, BLACK, (bar_x, bar_y, bar_width, bar_height), 3, border_radius=0)
 
         # Progress text
 
