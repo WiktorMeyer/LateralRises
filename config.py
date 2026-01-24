@@ -1,3 +1,8 @@
+import pygame
+
+pygame.init()
+pygame.font.init()
+
 #--- CONFIGURATION ---
 
 # INITIALIZATION
@@ -31,3 +36,23 @@ DEFAULT_SETS = 3
 
 #size of the camera feed
 CAM_W, CAM_H = 320, 240
+
+#GAME-AESTHETIC
+# colors
+SKY_BLUE = (135, 206, 235)
+WHITE = (255, 255, 255)
+RED = (220, 20, 60)
+GREEN = (34, 139, 34)
+BLACK = (0, 0, 0)
+GRAY = (200, 200, 200)
+DARK_GRAY = (100, 100, 100)
+YELLOW = (255, 215, 0)
+ORANGE = (255, 140, 0)
+BUTTON_COLOR = (70, 130, 180)
+BUTTON_HOVER = (100, 160, 210)
+
+# fonts
+font_ui = pygame.font.SysFont("Arial", 28, bold=True)
+font_big = pygame.font.SysFont("Arial", 60, bold=True)
+font_msg = pygame.font.SysFont("Arial", 40, bold=True)
+font_small = pygame.font.SysFont("Arial", 22)

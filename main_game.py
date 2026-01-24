@@ -8,6 +8,8 @@ import numpy as np
 # import other files
 import motion_tracking as mt
 import config
+from config import *
+from ui.base import Button
 
 # get variables from config.py
 SCREEN_WIDTH = config.SCREEN_WIDTH
@@ -18,30 +20,12 @@ CAM_W, CAM_H = config.CAM_W, config.CAM_H
 
 BIRD_Y = SCREEN_HEIGHT // 2
 
-# Colors
-SKY_BLUE = (135, 206, 235)
-WHITE = (255, 255, 255)
-RED = (220, 20, 60)
-GREEN = (34, 139, 34)
-BLACK = (0, 0, 0)
-GRAY = (200, 200, 200)
-DARK_GRAY = (100, 100, 100)
-YELLOW = (255, 215, 0)
-ORANGE = (255, 140, 0)
-BUTTON_COLOR = (70, 130, 180)
-BUTTON_HOVER = (100, 160, 210)
-
 # --- INITIALIZATION ---
 pygame.init()
 pygame.mixer.init()  # Initialize the mixer for audio
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption(config.WINDOW_NAME)
 
-# Fonts
-font_ui = pygame.font.SysFont("Arial", 28, bold=True)
-font_big = pygame.font.SysFont("Arial", 60, bold=True)
-font_msg = pygame.font.SysFont("Arial", 40, bold=True)
-font_small = pygame.font.SysFont("Arial", 22)
 
 # Game States
 game_state = 'MENU'
@@ -179,7 +163,10 @@ start_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 550, 200, 60)
 guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 620, 200, 50)
 text_guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 620, 200, 50)
 back_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 60)
-reps_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 50, 50)
+reps_minus_btn = Button(
+    pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 50, 50),
+    "-"
+)
 reps_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 350, 50, 50)
 sets_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 450, 50, 50)
 sets_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 450, 50, 50)
@@ -225,7 +212,7 @@ while running:
                 if text_guide_btn_rect.collidepoint(event.pos):
                     game_state = 'TEXT_GUIDE'
 
-                if reps_minus_rect.collidepoint(event.pos) and target_reps > 1: target_reps -= 1
+                if reps_minus_btn.is_clicked(mouse_pos) and target_reps > 1: target_reps -= 1
                 if reps_plus_rect.collidepoint(event.pos): target_reps += 1
                 if sets_minus_rect.collidepoint(event.pos) and target_sets > 1: target_sets -= 1
                 if sets_plus_rect.collidepoint(event.pos): target_sets += 1
@@ -300,7 +287,9 @@ while running:
 
         # Settings
         draw_text_centered(f"Reps per Set: {target_reps}", font_ui, BLACK, 310)
-        draw_button(reps_minus_rect, "-", reps_minus_rect.collidepoint(mouse_pos))
+        hover = reps_minus_btn.rect.collidepoint(mouse_pos)
+        reps_minus_btn.draw(screen, hover)
+
         draw_button(reps_plus_rect, "+", reps_plus_rect.collidepoint(mouse_pos))
 
         draw_text_centered(f"Total Sets: {target_sets}", font_ui, BLACK, 410)
