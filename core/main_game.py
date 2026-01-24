@@ -6,13 +6,24 @@ import cv2
 import numpy as np
 
 # import other files
-import motion_tracking as mt
 import config
 from config import *
 from ui.base import Button, ProgressBar
+from core.motion_tracker import MotionTracker
 
 
 BIRD_Y = SCREEN_HEIGHT // 2
+def start_tracking_thread():
+    global mt
+    try:
+        mt = MotionTracker()
+        mt.run()
+    except Exception as e:
+        print(f"Tracking Error: {e}")
+
+
+t = threading.Thread(target=start_tracking_thread, daemon=True)
+t.start()
 
 # --- INITIALIZATION ---
 pygame.init()
@@ -30,36 +41,16 @@ reps_at_start_of_set = 0
 rest_end_time = 0
 
 # --- VIDEO GUIDE SETUP ---
-video_path = "assets/video tutorial.mp4"  # Ensure this file exists!
-audio_path = "assets/tutorial_audio.wav"  # Audio file for the tutorial
+# Paths relative to main_game.py
+video_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'video tutorial.mp4')
+audio_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'tutorial_audio.wav')
+
 cap_guide = None
 tutorial_audio = None
 
 
-# --- TRACKING THREAD ---
-def start_tracking_thread():
-    try:
-        mt.main()
-    except Exception as e:
-        print(f"Tracking Error: {e}")
 
 
-t = threading.Thread(target=start_tracking_thread, daemon=True)
-t.start()
-
-
-# --- HELPER FUNCTIONS ---
-def get_normalized_wrist_height():
-    if mt.latest_result and mt.latest_result.pose_landmarks:
-        try:
-            landmarks = mt.latest_result.pose_landmarks[0]
-            # Average height for body position
-            avg_y = (landmarks[15].y + landmarks[16].y) / 2
-            mapped_y = (avg_y - 0.2) / (0.8 - 0.2)
-            return max(0.0, min(1.0, mapped_y))
-        except:
-            return 0.5
-    return 0.5
 
 def draw_text_centered(text, font, color, y_offset):
     surf = font.render(text, True, color)
