@@ -5,15 +5,9 @@ import os
 import cv2
 import numpy as np
 
-# --- IMPORT TRACKING SCRIPT ---
+# import other files
 import motion_tracking as mt
-
-# --- CONFIGURATION ---
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 700
-FEEDBACK_DURATION = 3000
-REST_DURATION = 5000
-CAM_W, CAM_H = 320, 240   # size of camera preview
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, CAM_W, CAM_H, FEEDBACK_DURATION, REST_DURATION
 
 BIRD_Y = SCREEN_HEIGHT // 2
 
