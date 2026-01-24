@@ -11,12 +11,6 @@ import config
 from config import *
 from ui.base import Button, ProgressBar
 
-# get variables from config.py
-SCREEN_WIDTH = config.SCREEN_WIDTH
-SCREEN_HEIGHT = config.SCREEN_HEIGHT
-FEEDBACK_DURATION = config.FEEDBACK_DURATION
-REST_DURATION = config.REST_DURATION
-CAM_W, CAM_H = config.CAM_W, config.CAM_H
 
 BIRD_Y = SCREEN_HEIGHT // 2
 
@@ -66,16 +60,6 @@ def get_normalized_wrist_height():
         except:
             return 0.5
     return 0.5
-
-"""
-def draw_button(rect, text, hover=False, color=BUTTON_COLOR):
-    draw_col = BUTTON_HOVER if hover else color
-    pygame.draw.rect(screen, draw_col, rect, border_radius=10)
-    pygame.draw.rect(screen, BLACK, rect, 2, border_radius=10)
-    text_surf = font_ui.render(text, True, WHITE)
-    text_rect = text_surf.get_rect(center=rect.center)
-    screen.blit(text_surf, text_rect)
-"""
 
 def draw_text_centered(text, font, color, y_offset):
     surf = font.render(text, True, color)
