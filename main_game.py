@@ -354,39 +354,115 @@ while running:
             y_start += 50
         draw_button(back_btn_rect, "BACK", back_btn_rect.collidepoint(mouse_pos))
 
+
     elif game_state == 'PLAYING':
+
         # Logic
+
         current_reps_done = mt.lateral_raise_count - reps_at_start_of_set
 
         if current_reps_done >= target_reps:
+
             if current_set < target_sets:
+
                 game_state = 'REST'
+
                 rest_end_time = current_time + REST_DURATION
+
             else:
+
                 game_state = 'VICTORY'
 
         # Feedback
-        if mt.incorrect_form_detected: feedback_end_time = current_time + FEEDBACK_DURATION
+
+        if mt.incorrect_form_detected:
+            feedback_end_time = current_time + FEEDBACK_DURATION
+
         show_red_alert = mt.incorrect_form_detected
 
         # *** DYNAMIC BIRD ***
+
         # We pass the real-time arm state from motion_tracking
+
         draw_dynamic_bird(
+
             screen,
+
             SCREEN_WIDTH // 2,
+
             BIRD_Y,
+
             mt.left_arm_up,
+
             mt.right_arm_up,
+
             mt.left_wrist_height,
+
             mt.right_wrist_height
+
         )
 
         # UI Stats
+
         pygame.draw.rect(screen, WHITE, (20, 20, 280, 110), border_radius=10)
+
         pygame.draw.rect(screen, BLACK, (20, 20, 280, 110), 2, border_radius=10)
+
         screen.blit(font_ui.render(f"Set: {current_set} / {target_sets}", True, BLACK), (35, 30))
+
         screen.blit(font_ui.render(f"Reps: {current_reps_done} / {target_reps}", True, BLACK), (35, 65))
+
         screen.blit(font_small.render(f"Total Reps: {mt.lateral_raise_count}", True, DARK_GRAY), (35, 100))
+
+        # Progress Bar
+
+        bar_width = 400
+
+        bar_height = 30
+
+        bar_x = SCREEN_WIDTH // 2 - bar_width // 2
+
+        bar_y = SCREEN_HEIGHT - 80
+
+        # Background
+
+        pygame.draw.rect(screen, GRAY, (bar_x, bar_y, bar_width, bar_height), border_radius=15)
+
+        # Fill based on progress
+
+        progress = min(current_reps_done / target_reps, 1.0)
+
+        fill_width = int(bar_width * progress)
+
+        if fill_width > 0:
+
+            # Gradient effect: change color as you progress
+
+            if progress < 0.5:
+
+                bar_color = ORANGE
+
+            elif progress < 0.8:
+
+                bar_color = YELLOW
+
+            else:
+
+                bar_color = GREEN
+
+            pygame.draw.rect(screen, bar_color, (bar_x, bar_y, fill_width, bar_height), border_radius=15)
+
+        # Border
+
+        pygame.draw.rect(screen, BLACK, (bar_x, bar_y, bar_width, bar_height), 3, border_radius=15)
+
+        # Progress text
+
+        progress_text = font_small.render(f"{current_reps_done}/{target_reps}", True, BLACK)
+
+        text_rect = progress_text.get_rect(center=(SCREEN_WIDTH // 2, bar_y + bar_height // 2))
+
+        screen.blit(progress_text, text_rect)
 
         # Wrong Form Alert
         if show_red_alert:
