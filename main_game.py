@@ -67,7 +67,7 @@ def get_normalized_wrist_height():
             return 0.5
     return 0.5
 
-
+"""
 def draw_button(rect, text, hover=False, color=BUTTON_COLOR):
     draw_col = BUTTON_HOVER if hover else color
     pygame.draw.rect(screen, draw_col, rect, border_radius=10)
@@ -75,7 +75,7 @@ def draw_button(rect, text, hover=False, color=BUTTON_COLOR):
     text_surf = font_ui.render(text, True, WHITE)
     text_rect = text_surf.get_rect(center=rect.center)
     screen.blit(text_surf, text_rect)
-
+"""
 
 def draw_text_centered(text, font, color, y_offset):
     surf = font.render(text, True, color)
@@ -158,20 +158,20 @@ previous_bird_y = SCREEN_HEIGHT // 2
 debug_trigger = False
 feedback_end_time = 0
 
-# UI Rectangles
-start_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 550, 200, 60)
-guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 620, 200, 50)
-text_guide_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 620, 200, 50)
-back_btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 60)
+# UI Buttons
+start_btn_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 - 100, 550, 200, 60),"START GAME")
+guide_btn_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 + 20, 620, 200, 50),"WATCH TUTORIAL",color=GRAY)
+text_guide_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 - 220, 620, 200, 50),"HOW TO PLAY", color=GRAY)
+back_btn_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 60),"BACK",color=RED)
 reps_minus_btn = Button(
     pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 50, 50),
     "-"
 )
-reps_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 350, 50, 50)
-sets_minus_rect = pygame.Rect(SCREEN_WIDTH // 2 - 150, 450, 50, 50)
-sets_plus_rect = pygame.Rect(SCREEN_WIDTH // 2 + 100, 450, 50, 50)
-play_again_rect = pygame.Rect(SCREEN_WIDTH // 2 - 220, 500, 200, 60)
-quit_rect = pygame.Rect(SCREEN_WIDTH // 2 + 20, 500, 200, 60)
+reps_plus_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 + 100, 350, 50, 50),"+")
+sets_minus_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 - 150, 450, 50, 50),"-")
+sets_plus_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 + 100, 450, 50, 50),"+")
+play_again_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 - 220, 500, 200, 60),"PLAY AGAIN")
+quit_btn = Button(pygame.Rect(SCREEN_WIDTH // 2 + 20, 500, 200, 60),"QUIT",color=RED)
 
 print("--- VERSION 2 (VIDEO + DYNAMIC BIRD + AUDIO) STARTED ---")
 
@@ -186,12 +186,12 @@ while running:
         # MENU
         if game_state == 'MENU':
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if start_btn_rect.collidepoint(event.pos):
+                if start_btn_btn.is_clicked(mouse_pos):
                     game_state = 'PLAYING'
                     reps_at_start_of_set = mt.lateral_raise_count
                     current_set = 1
 
-                if guide_btn_rect.collidepoint(event.pos):
+                if guide_btn_btn.is_clicked(mouse_pos):
                     game_state = 'GUIDE'
                     if os.path.exists(video_path):
                         cap_guide = cv2.VideoCapture(video_path)
@@ -209,17 +209,17 @@ while running:
                     else:
                         print("Audio file not found: tutorial_audio.wav")
 
-                if text_guide_btn_rect.collidepoint(event.pos):
+                if text_guide_btn.is_clicked(mouse_pos):
                     game_state = 'TEXT_GUIDE'
 
                 if reps_minus_btn.is_clicked(mouse_pos) and target_reps > 1: target_reps -= 1
-                if reps_plus_rect.collidepoint(event.pos): target_reps += 1
-                if sets_minus_rect.collidepoint(event.pos) and target_sets > 1: target_sets -= 1
-                if sets_plus_rect.collidepoint(event.pos): target_sets += 1
+                if reps_plus_btn.is_clicked(mouse_pos): target_reps += 1
+                if sets_minus_btn.is_clicked(mouse_pos) and target_sets > 1: target_sets -= 1
+                if sets_plus_btn.is_clicked(mouse_pos): target_sets += 1
 
         # GUIDE (Video)
         elif game_state == 'GUIDE':
-            if event.type == pygame.MOUSEBUTTONDOWN and back_btn_rect.collidepoint(event.pos):
+            if event.type == pygame.MOUSEBUTTONDOWN and back_btn_btn.is_clicked(mouse_pos):
                 game_state = 'MENU'
                 if cap_guide:
                     cap_guide.release()
@@ -230,14 +230,14 @@ while running:
                     tutorial_audio = None
 
         elif game_state == 'TEXT_GUIDE':
-            if event.type == pygame.MOUSEBUTTONDOWN and back_btn_rect.collidepoint(event.pos):
+            if event.type == pygame.MOUSEBUTTONDOWN and back_btn_btn.is_clicked(mouse_pos):
                 game_state = 'MENU'
 
         # VICTORY
         elif game_state == 'VICTORY':
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if play_again_rect.collidepoint(event.pos): game_state = 'MENU'
-                if quit_rect.collidepoint(event.pos): running = False
+                if play_again_btn.is_clicked(mouse_pos): game_state = 'MENU'
+                if quit_btn.is_clicked(mouse_pos): running = False
 
         # PLAYING
         if game_state == 'PLAYING':
@@ -287,19 +287,18 @@ while running:
 
         # Settings
         draw_text_centered(f"Reps per Set: {target_reps}", font_ui, BLACK, 310)
-        hover = reps_minus_btn.rect.collidepoint(mouse_pos)
-        reps_minus_btn.draw(screen, hover)
 
-        draw_button(reps_plus_rect, "+", reps_plus_rect.collidepoint(mouse_pos))
+        reps_minus_btn.draw(screen, reps_minus_btn.rect.collidepoint(mouse_pos))
+        reps_plus_btn.draw(screen, reps_plus_btn.rect.collidepoint(mouse_pos))
 
         draw_text_centered(f"Total Sets: {target_sets}", font_ui, BLACK, 410)
-        draw_button(sets_minus_rect, "-", sets_minus_rect.collidepoint(mouse_pos))
-        draw_button(sets_plus_rect, "+", sets_plus_rect.collidepoint(mouse_pos))
 
-        draw_button(start_btn_rect, "START GAME", start_btn_rect.collidepoint(mouse_pos))
-        draw_button(guide_btn_rect, "WATCH TUTORIAL", guide_btn_rect.collidepoint(mouse_pos), color=GRAY)
-        draw_button(text_guide_btn_rect, "HOW TO PLAY", text_guide_btn_rect.collidepoint(mouse_pos), color=GRAY)
+        sets_minus_btn.draw(screen, sets_minus_btn.rect.collidepoint(mouse_pos))
+        sets_plus_btn.draw(screen, sets_plus_btn.rect.collidepoint(mouse_pos))
 
+        start_btn_btn.draw(screen, start_btn_btn.rect.collidepoint(mouse_pos))
+        guide_btn_btn.draw(screen, guide_btn_btn.rect.collidepoint(mouse_pos))
+        text_guide_btn.draw(screen, text_guide_btn.rect.collidepoint(mouse_pos))
     elif game_state == 'GUIDE':
         if cap_guide and cap_guide.isOpened():
             ret, frame = cap_guide.read()
@@ -319,7 +318,7 @@ while running:
             screen.fill(BLACK)
             draw_text_centered("Video not found: tutorial.mp4", font_msg, RED, 300)
 
-        draw_button(back_btn_rect, "BACK", back_btn_rect.collidepoint(mouse_pos))
+        back_btn_btn.draw(screen, back_btn_btn.rect.collidepoint(mouse_pos))
 
     elif game_state == 'TEXT_GUIDE':
         overlay = pygame.Surface((850, 500))
@@ -334,7 +333,7 @@ while running:
         for line in config.INSTRUCTIONS:
             draw_text_centered(line, font_small, BLACK, y_start)
             y_start += 50
-        draw_button(back_btn_rect, "BACK", back_btn_rect.collidepoint(mouse_pos))
+        back_btn_btn.draw(screen, back_btn_btn.rect.collidepoint(mouse_pos))
 
 
     elif game_state == 'PLAYING':
@@ -483,8 +482,8 @@ while running:
         screen.fill(GREEN)
         draw_text_centered("WORKOUT COMPLETE!", font_big, WHITE, 200)
         draw_text_centered(f"You finished {target_sets} sets.", font_ui, WHITE, 300)
-        draw_button(play_again_rect, "PLAY AGAIN", play_again_rect.collidepoint(mouse_pos))
-        draw_button(quit_rect, "QUIT", quit_rect.collidepoint(mouse_pos), color=RED)
+        play_again_btn.draw(screen, play_again_btn.rect.collidepoint(mouse_pos))
+        quit_btn.draw(screen, quit_btn.rect.collidepoint(mouse_pos))
 
     pygame.display.flip()
     clock.tick(30)
