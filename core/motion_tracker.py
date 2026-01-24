@@ -1,3 +1,5 @@
+import threading
+
 import cv2
 import mediapipe as mp
 import time
@@ -157,3 +159,7 @@ class MotionTracker:
                 time.sleep(0.01)
 
         cap.release()
+
+    def start(self):
+        t = threading.Thread(target=self.run, daemon=True)
+        t.start()
