@@ -45,9 +45,14 @@ def check_lateral_raise_form(pose_landmarks):
     left_wrist = pose_landmarks[15]
     right_wrist = pose_landmarks[16]
 
+    DISCOUNT_FACTOR = 1.25
+
+    left_threshold_y = left_shoulder.y * DISCOUNT_FACTOR
+    right_threshold_y = right_shoulder.y * DISCOUNT_FACTOR
+
     # Check if wrists are above shoulders (Y coordinate is smaller when higher)
-    left_raised = left_wrist.y < left_shoulder.y
-    right_raised = right_wrist.y < right_shoulder.y
+    left_raised = left_wrist.y < left_threshold_y
+    right_raised = right_wrist.y < right_threshold_y
 
     # Export these for the UI to use
     left_arm_up = left_raised
@@ -118,6 +123,7 @@ def draw_stickman(frame, pose_landmarks):
             cx, cy = int(lm.x * w), int(lm.y * h)
             # Draw Red Circles for Joints
             cv2.circle(frame, (cx, cy), 8, (0, 0, 255), -1)
+
 
 
 def main():
