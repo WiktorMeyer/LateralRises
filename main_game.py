@@ -35,7 +35,7 @@ BUTTON_HOVER = (100, 160, 210)
 pygame.init()
 pygame.mixer.init()  # Initialize the mixer for audio
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Group 6: Bird Game V2 (Video Guide)")
+pygame.display.set_caption(config.WINDOW_NAME)
 
 # Fonts
 font_ui = pygame.font.SysFont("Arial", 28, bold=True)
@@ -45,8 +45,8 @@ font_small = pygame.font.SysFont("Arial", 22)
 
 # Game States
 game_state = 'MENU'
-target_reps = 10
-target_sets = 3
+target_reps = config.DEFAULT_REPS
+target_sets = config.DEFAULT_SETS
 current_set = 1
 reps_at_start_of_set = 0
 rest_end_time = 0
@@ -294,7 +294,7 @@ while running:
     # --- DRAWING ---
 
     if game_state == 'MENU':
-        title = font_big.render("Bird Game (Version 2)", True, BLACK)
+        title = font_big.render(config.MENU_TITLE, True, BLACK)
         screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 60))
         draw_text_centered("Setup Your Workout", font_ui, DARK_GRAY, 250)
 
@@ -340,17 +340,9 @@ while running:
         pygame.draw.rect(screen, BLACK, (75, 100, 850, 500), 3)
 
         draw_text_centered("HOW TO PLAY", font_big, BLACK, 150)
-        instructions = [
-            "1. Stand back so your upper body is visible to the camera.",
-            "2. Hold weights (preferably dumbbells) in your hands.",
-            "3. Raise your arms to the side (Lateral Raises).",
-            "4. Watch the Bird overlay track your form in real-time.",
-            "5. Keep arms straight and synchronized! Don't let one lag behind.",
-            "6. If lines turn RED or you see a warning, correct your form!",
-            "7. Complete the target reps to finish a set."
-        ]
+
         y_start = 230
-        for line in instructions:
+        for line in config.INSTRUCTIONS:
             draw_text_centered(line, font_small, BLACK, y_start)
             y_start += 50
         draw_button(back_btn_rect, "BACK", back_btn_rect.collidepoint(mouse_pos))
