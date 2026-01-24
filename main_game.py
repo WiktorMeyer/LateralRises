@@ -13,6 +13,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 700
 FEEDBACK_DURATION = 3000
 REST_DURATION = 5000
+CAM_W, CAM_H = 320, 240   # size of camera preview
 
 BIRD_Y = SCREEN_HEIGHT // 2
 
@@ -259,9 +260,37 @@ while running:
             if event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
                 mt.left_arm_up = False
                 mt.right_arm_up = False
+    screen.fill(SKY_BLUE)
+    # CAMERA
+    if game_state == 'PLAYING':
+        if mt.latest_visualized_frame is not None:
+            # Get frame from motion_tracking
+            frame = mt.latest_visualized_frame.copy()  # Use copy to avoid modifying original
+
+            # Convert OpenCV (BGR) to Pygame (RGB)
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Rotate 90 degrees counterclockwise and flip to correct orientation
+            frame = np.rot90(frame)
+
+            # Create Pygame Surface
+            frame_surface = pygame.surfarray.make_surface(frame)
+
+            # Scale to fit window
+            frame_surface = pygame.transform.scale(frame_surface, (CAM_W, CAM_H))
+
+            cam_x = 0
+            cam_y = SCREEN_HEIGHT - CAM_H
+
+            # Draw the camera feed
+            screen.blit(frame_surface, (cam_x, cam_y))
+        else:
+            # Fallback if camera not ready
+            pygame.draw.rect(screen, BLACK, (0, SCREEN_HEIGHT - CAM_H, CAM_W, CAM_H))
+            temp_text = font_small.render("Loading Camera...", True, WHITE)
+            screen.blit(temp_text, (10, SCREEN_HEIGHT - CAM_H + 110))
 
     # --- DRAWING ---
-    screen.fill(SKY_BLUE)
 
     if game_state == 'MENU':
         title = font_big.render("Bird Game (Version 2)", True, BLACK)

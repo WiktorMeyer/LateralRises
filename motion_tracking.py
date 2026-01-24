@@ -22,6 +22,7 @@ FORM_CHECK_DELAY = 0.5
 left_wrist_height = 0.5
 right_wrist_height = 0.5
 
+latest_visualized_frame = None
 # Variables to share specific limb states for the Bird
 left_arm_up = False
 right_arm_up = False
@@ -78,8 +79,49 @@ def check_lateral_raise_form(pose_landmarks):
             print(f"Rep Count: {lateral_raise_count}")
         arms_raised = False
 
+def draw_stickman(frame, pose_landmarks):
+    """Draws the stickman overlay on the OpenCV frame."""
+    h, w, c = frame.shape
+
+    # 1. Draw Connections (Lines)
+    # Define connections (Shoulders, Arms, Torso)
+    connections = [
+        (11, 12),  # Shoulders
+        (11, 13), (13, 15),  # Left Arm
+        (12, 14), (14, 16),  # Right Arm
+        (11, 23), (12, 24),  # Torso
+        (23, 24)  # Hips
+    ]
+
+    for start_idx, end_idx in connections:
+        if start_idx < len(pose_landmarks) and end_idx < len(pose_landmarks):
+            lm1 = pose_landmarks[start_idx]
+            lm2 = pose_landmarks[end_idx]
+
+            # Check visibility
+            if hasattr(lm1, 'visibility') and lm1.visibility < 0.5: continue
+            if hasattr(lm2, 'visibility') and lm2.visibility < 0.5: continue
+
+            p1 = (int(lm1.x * w), int(lm1.y * h))
+            p2 = (int(lm2.x * w), int(lm2.y * h))
+
+            # Draw Thick Blue Line
+            cv2.line(frame, p1, p2, (255, 255, 0), 4)
+
+    # 2. Draw Landmarks (Joints)
+    relevant_indices = [11, 12, 13, 14, 15, 16]  # Shoulders, Elbows, Wrists
+    for idx in relevant_indices:
+        if idx < len(pose_landmarks):
+            lm = pose_landmarks[idx]
+            if hasattr(lm, 'visibility') and lm.visibility < 0.5: continue
+
+            cx, cy = int(lm.x * w), int(lm.y * h)
+            # Draw Red Circles for Joints
+            cv2.circle(frame, (cx, cy), 8, (0, 0, 255), -1)
+
 
 def main():
+    global latest_visualized_frame
     # Setup MediaPipe
     options = PoseLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=model_path),
@@ -105,11 +147,19 @@ def main():
             landmarker.detect_async(mp_image, frame_timestamp_ms)
 
             # Process logic
+            # Around line 115 in motion_tracking.py, replace:
+            # Process logic
             if latest_result and latest_result.pose_landmarks:
                 for pose_landmarks in latest_result.pose_landmarks:
                     check_lateral_raise_form(pose_landmarks)
+                    # DRAW STICKMAN on the frame
+                    draw_stickman(frame, pose_landmarks)
 
             # NOTE: No cv2.imshow here! This keeps it hidden.
+            frame = cv2.flip(frame, 1)  # MOVE THIS BEFORE STORING
+
+            # Store this frame so Main Game can access it
+            latest_visualized_frame = frame
 
             # Small sleep to prevent CPU hogging
             time.sleep(0.01)
