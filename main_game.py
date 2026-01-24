@@ -51,8 +51,8 @@ reps_at_start_of_set = 0
 rest_end_time = 0
 
 # --- VIDEO GUIDE SETUP ---
-video_path = "video tutorial.mp4"  # Ensure this file exists!
-audio_path = "tutorial_audio.wav"  # Audio file for the tutorial
+video_path = "assets/video tutorial.mp4"  # Ensure this file exists!
+audio_path = "assets/tutorial_audio.wav"  # Audio file for the tutorial
 cap_guide = None
 tutorial_audio = None
 

@@ -4,7 +4,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import time
 
-model_path = r'pose_landmarker_heavy.task'
+model_path = r'assets/pose_landmarker_heavy.task'
 
 BaseOptions = mp.tasks.BaseOptions
 PoseLandmarker = mp.tasks.vision.PoseLandmarker
