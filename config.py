@@ -25,7 +25,7 @@ INSTRUCTIONS = [
 
 # GAME
 #duration of wrong form feedback
-FEEDBACK_DURATION = 3000
+FEEDBACK_DURATION = 500
 
 #rest (wait period) between sets
 REST_DURATION = 5000

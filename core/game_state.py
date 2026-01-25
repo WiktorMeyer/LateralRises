@@ -22,6 +22,9 @@ class GameState:
         self.rest_end_time = 0
         self.seen_tutorial = False
         self.show_tutorial_popup = False
+        #feedback
+        self.feedback_end_time = pygame.time.get_ticks()
+        self.show_red_alert = False
         # Paths relative to game_state.py
         self.video_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'video tutorial.mp4')
         self.audio_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'tutorial_audio.wav')
@@ -133,7 +136,6 @@ class GameState:
         running = True
         previous_bird_y = SCREEN_HEIGHT // 2
         debug_trigger = False
-        feedback_end_time = 0
 
         print("--- VERSION 2 (VIDEO + DYNAMIC BIRD + AUDIO) STARTED ---")
 
@@ -332,9 +334,11 @@ class GameState:
                 # Feedback
 
                 if mt.incorrect_form_detected:
-                    feedback_end_time = current_time + FEEDBACK_DURATION
-
-                show_red_alert = mt.incorrect_form_detected
+                    self.feedback_end_time = current_time + FEEDBACK_DURATION
+                    self.show_red_alert = True
+                else:
+                    if current_time > self.feedback_end_time:
+                        self.show_red_alert = False
 
                 # *** DYNAMIC BIRD ***
 
@@ -400,7 +404,7 @@ class GameState:
                 self.buttons['back'].draw(self.screen, self.buttons['back'].rect.collidepoint(mouse_pos))
 
                 # Wrong Form Alert
-                if show_red_alert:
+                if self.show_red_alert:
                     pygame.draw.rect(self.screen, RED, (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), 15)
                     warn_bg = pygame.Surface((400, 80))
                     warn_bg.fill(WHITE)
