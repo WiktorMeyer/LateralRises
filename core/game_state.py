@@ -360,9 +360,9 @@ class GameState:
 
                 # UI Stats
 
-                pygame.draw.rect(self.screen, WHITE, (20, 20, 280, 110), border_radius=10)
+                pygame.draw.rect(self.screen, WHITE, (20, 20, 240, 110), border_radius=10)
 
-                pygame.draw.rect(self.screen, BLACK, (20, 20, 280, 110), 2, border_radius=10)
+                pygame.draw.rect(self.screen, BLACK, (20, 20, 240, 110), 2, border_radius=10)
 
                 self.screen.blit(font_ui.render(f"Set: {self.current_set} / {self.target_sets}", True, BLACK), (35, 30))
 
@@ -375,7 +375,7 @@ class GameState:
                 bar_width = 400
                 bar_height = 30
                 bar_x = SCREEN_WIDTH // 2 - bar_width // 2
-                bar_y = SCREEN_HEIGHT - 160
+                bar_y = 100
 
                 # Background
                 progress_bar = ProgressBar((bar_x, bar_y, bar_width, bar_height), GRAY, 15)
@@ -390,7 +390,7 @@ class GameState:
 
                 # Progress text
 
-                progress_text = font_small.render(f"{current_reps_done}/{self.target_reps}", True, BLACK)
+                progress_text = font_small.render(f"PROGRESS: {current_reps_done}/{self.target_reps}", True, BLACK)
 
                 text_rect = progress_text.get_rect(center=(SCREEN_WIDTH // 2, bar_y + bar_height // 2))
 
