@@ -315,6 +315,12 @@ class GameState:
 
             elif self.game_state == 'PLAYING':
 
+                if mt.lateral_raise_count == 0:
+                    prompt_text = font_big.render(f"YOU MAY BEGIN EXERCISING", True, BLACK)
+
+                    prompt_rect = prompt_text.get_rect(center=(SCREEN_WIDTH // 2, (SCREEN_HEIGHT // 2)-100))
+
+                    self.screen.blit(prompt_text, prompt_rect)
                 # Logic
 
                 current_reps_done = mt.lateral_raise_count - self.reps_at_start_of_set
