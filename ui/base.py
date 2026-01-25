@@ -3,11 +3,11 @@ from config import *
 
 
 class Button:
-    def __init__(self, rect, text, color=BUTTON_COLOR, hover_color = BUTTON_HOVER):
+    def __init__(self, rect, text, color=BUTTON_COLOR):
         self.rect = rect
         self.text = text
         self.color = color
-        self.hover_color = hover_color
+        self.hover_color = BUTTON_HOVER
 
     def draw(self, screen, hover=False):
         draw_col = self.hover_color if hover else self.color

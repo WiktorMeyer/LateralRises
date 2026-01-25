@@ -1,8 +1,8 @@
 import threading
-
 import cv2
 import mediapipe as mp
 import time
+
 
 class MotionTracker:
     def __init__(self):
@@ -17,6 +17,10 @@ class MotionTracker:
         self.latest_visualized_frame = None
         self.left_arm_up = False
         self.right_arm_up = False
+        self.last_rep_time = 0
+        self.MIN_REP_INTERVAL = 1  # Minimum time between reps
+        self.MIN_VISIBILITY = 0.5  # Minimum visibility threshold
+
         self.BaseOptions = mp.tasks.BaseOptions
         self.PoseLandmarker = mp.tasks.vision.PoseLandmarker
         self.PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
@@ -27,15 +31,43 @@ class MotionTracker:
     def result_callback(self, result: mp.tasks.vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
         self.latest_result = result
 
-    def check_lateral_raise_form(self, pose_landmarks):
+    def _reset_tracking_state(self):
+        """Reset tracking state when detection is lost or unreliable"""
+        self.arms_raised = False
+        self.left_arm_up = False
+        self.right_arm_up = False
+        self.one_arm_raised_time = None
 
+    def check_lateral_raise_form(self, pose_landmarks):
+        # Basic length check
         if len(pose_landmarks) < 17:
+            self._reset_tracking_state()
             return
 
-        left_shoulder = pose_landmarks[11]
-        right_shoulder = pose_landmarks[12]
-        left_wrist = pose_landmarks[15]
-        right_wrist = pose_landmarks[16]
+        try:
+            left_shoulder = pose_landmarks[11]
+            right_shoulder = pose_landmarks[12]
+            left_wrist = pose_landmarks[15]
+            right_wrist = pose_landmarks[16]
+
+            # Verify landmarks have required attributes
+            for lm in [left_shoulder, right_shoulder, left_wrist, right_wrist]:
+                if not hasattr(lm, 'x') or not hasattr(lm, 'y'):
+                    self._reset_tracking_state()
+                    return
+
+            # Check visibility - if any critical landmark is not visible enough, skip
+            if (hasattr(left_wrist, 'visibility') and left_wrist.visibility < self.MIN_VISIBILITY or
+                    hasattr(right_wrist, 'visibility') and right_wrist.visibility < self.MIN_VISIBILITY or
+                    hasattr(left_shoulder, 'visibility') and left_shoulder.visibility < self.MIN_VISIBILITY or
+                    hasattr(right_shoulder, 'visibility') and right_shoulder.visibility < self.MIN_VISIBILITY):
+                self._reset_tracking_state()
+                return
+
+        except (IndexError, AttributeError) as e:
+            # Landmarks not properly detected
+            self._reset_tracking_state()
+            return
 
         DISCOUNT_FACTOR = 1.25
 
@@ -46,7 +78,7 @@ class MotionTracker:
         left_raised = left_wrist.y < left_threshold_y
         right_raised = right_wrist.y < right_threshold_y
 
-        # Export these for the UI to use (ADD self.!)
+        # Export these for the UI to use
         self.left_arm_up = left_raised
         self.right_arm_up = right_raised
         self.left_wrist_height = left_wrist.y
@@ -66,13 +98,17 @@ class MotionTracker:
             if both_raised or (not left_raised and not right_raised):
                 self.incorrect_form_detected = False
 
-        # Rep Counting Logic
+        # Rep Counting Logic with debouncing
         if both_raised and not self.arms_raised:
             self.arms_raised = True
             self.incorrect_form_detected = False
         elif not both_raised and self.arms_raised:
-            if not self.incorrect_form_detected:
+            current_time = time.time()
+            # Only count if form is correct AND enough time has passed
+            if (not self.incorrect_form_detected and
+                    current_time - self.last_rep_time > self.MIN_REP_INTERVAL):
                 self.lateral_raise_count += 1
+                self.last_rep_time = current_time
                 print(f"Rep Count: {self.lateral_raise_count}")
             self.arms_raised = False
 
@@ -81,7 +117,6 @@ class MotionTracker:
         h, w, c = frame.shape
 
         # 1. Draw Connections (Lines)
-        # Define connections (Shoulders, Arms, Torso)
         connections = [
             (11, 12),  # Shoulders
             (11, 13), (13, 15),  # Left Arm
@@ -102,7 +137,7 @@ class MotionTracker:
                 p1 = (int(lm1.x * w), int(lm1.y * h))
                 p2 = (int(lm2.x * w), int(lm2.y * h))
 
-                # Draw Thick Blue Line
+                # Draw Thick Yellow Line
                 cv2.line(frame, p1, p2, (255, 255, 0), 4)
 
         # 2. Draw Landmarks (Joints)
@@ -116,7 +151,6 @@ class MotionTracker:
                 # Draw Red Circles for Joints
                 cv2.circle(frame, (cx, cy), 8, (0, 0, 255), -1)
 
-
     def run(self):
         # Setup MediaPipe
         options = self.PoseLandmarkerOptions(
@@ -125,7 +159,7 @@ class MotionTracker:
             result_callback=self.result_callback)
 
         cap = cv2.VideoCapture(0)
-        # Set low resolution for speed (analysis doesn't need 4k)
+        # Set low resolution for speed
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -134,7 +168,8 @@ class MotionTracker:
         with self.PoseLandmarker.create_from_options(options) as landmarker:
             while cap.isOpened():
                 ret, frame = cap.read()
-                if not ret: break
+                if not ret:
+                    break
 
                 # Convert BGR to RGB
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -148,9 +183,12 @@ class MotionTracker:
                         self.check_lateral_raise_form(pose_landmarks)
                         # DRAW STICKMAN on the frame
                         self.draw_stickman(frame, pose_landmarks)
+                else:
+                    # No pose detected - reset state
+                    self._reset_tracking_state()
 
-                # NOTE: No cv2.imshow here! This keeps it hidden.
-                frame = cv2.flip(frame, 1)  # MOVE THIS BEFORE STORING
+                # Flip frame for display
+                frame = cv2.flip(frame, 1)
 
                 # Store this frame so Main Game can access it
                 self.latest_visualized_frame = frame
@@ -161,5 +199,6 @@ class MotionTracker:
         cap.release()
 
     def start(self):
+        """Start tracking in a background thread"""
         t = threading.Thread(target=self.run, daemon=True)
         t.start()
