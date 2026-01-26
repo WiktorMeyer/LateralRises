@@ -40,8 +40,8 @@ class GameState:
         return{
             # UI Buttons
             'start': Button(pygame.Rect(SCREEN_WIDTH // 2 - 100, 550, 200, 60), "START GAME"),
-            'guide': Button(pygame.Rect(SCREEN_WIDTH // 2 + 20, 620, 200, 50), "WATCH TUTORIAL", color=GREEN),
-            'text_guide': Button(pygame.Rect(SCREEN_WIDTH // 2 - 220, 620, 200, 50), "READ TUTORIAL", color=GREEN),
+            'guide': Button(pygame.Rect(SCREEN_WIDTH // 2 + 20, 620, 200, 50), "VIDEO TUTORIAL", color=GREEN),
+            'text_guide': Button(pygame.Rect(SCREEN_WIDTH // 2 - 220, 620, 200, 50), "TEXT TUTORIAL", color=GREEN),
             'back': Button(pygame.Rect(SCREEN_WIDTH // 2 - 100, 620, 200, 60), "BACK", color=RED),
             'reps_minus': Button(pygame.Rect(SCREEN_WIDTH // 2 - 150, 350, 50, 50),"-"),
             'reps_plus': Button(pygame.Rect(SCREEN_WIDTH // 2 + 100, 350, 50, 50), "+"),
