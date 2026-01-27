@@ -229,6 +229,8 @@ class GameState:
                     # Convert OpenCV (BGR) to Pygame (RGB)
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
+                    frame = np.fliplr(frame)
+
                     # Rotate 90 degrees counterclockwise and flip to correct orientation
                     frame = np.rot90(frame)
 
